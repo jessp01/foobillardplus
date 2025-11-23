@@ -31,11 +31,9 @@
 #include <string.h>
 #ifdef __APPLE__
  #include <OpenGL/gl.h>
- #include <OpenGL/glu.h>
  #include <OpenGL/glext.h>
 #else
  #include <GL/gl.h>
- #include <GL/glu.h>
  #include <GL/glext.h>
 #endif
 #include "billard.h"
@@ -760,9 +758,9 @@ void create_pooltex_binds( void )
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, options_tex_mag_filter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-        gluBuild2DMipmaps(GL_TEXTURE_2D, 3, balltexw, balltexh, GL_RGB,
-                          GL_UNSIGNED_BYTE, balltexdata[i]);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, balltexw, balltexh, 0, GL_RGB, GL_UNSIGNED_BYTE, balltexdata[i]);
+	glGenerateMipmap(GL_TEXTURE_2D);
         if(options_anisotrop && options_value_anisotrop > 0.0) {
           glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, options_value_anisotrop);
         }
@@ -787,8 +785,8 @@ void create_caramboltex_binds( void )
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-        gluBuild2DMipmaps(GL_TEXTURE_2D, 3, balltexw, balltexh, GL_RGB,
-                          GL_UNSIGNED_BYTE, balltexdata[i]);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, balltexw, balltexh, 0, GL_RGB, GL_UNSIGNED_BYTE, balltexdata[i]);
+	glGenerateMipmap(GL_TEXTURE_2D);
         if(options_anisotrop && options_value_anisotrop > 0.0) {
           glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, options_value_anisotrop);
         }
@@ -813,8 +811,8 @@ void create_snookertex_binds( void )
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-        gluBuild2DMipmaps(GL_TEXTURE_2D, 3, balltexw, balltexh, GL_RGB,
-                          GL_UNSIGNED_BYTE, balltexdata[i]);
+	glTexImage2D(GL_TEXTURE_2D, 0, 3, balltexw, balltexh, 0, GL_RGB, GL_UNSIGNED_BYTE, balltexdata[i]);
+	glGenerateMipmap(GL_TEXTURE_2D);
         if(options_anisotrop && options_value_anisotrop > 0.0) {
           glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, options_value_anisotrop);
         }

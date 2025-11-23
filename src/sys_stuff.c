@@ -45,12 +45,10 @@
 #ifdef __APPLE__
  #include <OpenGL/OpenGL.h>
  #include <OpenGL/gl.h>
- #include <OpenGL/glu.h>
  #include <OpenGL/glext.h>
  #include <CoreFoundation/CoreFoundation.h>
 #else
  #include <GL/gl.h>
- #include <GL/glu.h>
  #include <GL/glext.h>
 #endif
 #include "sys_stuff.h"
@@ -66,6 +64,7 @@ static int check_SDL;           // check for mousebutton for manual from fullscr
 static int ignore = 0;          // SDL bug set videomode calls reshape event twice SDL 1.2.8 and > ?
 static SDL_Window *main_window = NULL;
 static SDL_GLContext main_glcontext = NULL;
+PFNGLGENERATEMIPMAPPROC glGenerateMipmap = NULL;
 // Note: vid_surface is no longer needed but keep it for now for compatibility
 SDL_Surface * vid_surface = NULL;
 
@@ -450,6 +449,11 @@ void sys_create_display(int width,int height,int _fullscreen)
             main_window = NULL;
             sys_exit(1);
         }
+    }
+
+    glGenerateMipmap = (PFNGLGENERATEMIPMAPPROC)SDL_GL_GetProcAddress("glGenerateMipmap");
+    if (!glGenerateMipmap) {
+	fprintf(stderr, "Warning: glGenerateMipmap not available, mipmaps may not work\n");
     }
 
     /* Apply VSync setting */

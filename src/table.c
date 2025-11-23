@@ -26,11 +26,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #ifdef __APPLE__
- #include <OpenGL/glu.h>
  #include <OpenGL/gl.h>
  #include <OpenGL/glext.h>
 #else
- #include <GL/glu.h>
  #include <GL/gl.h>
  #include <GL/glext.h>
 #endif
@@ -40,6 +38,36 @@
 #include "png_loader.h"
 #include "bumpref.h"
 #include "vmath.h"
+
+/* Replacement for gluSphere - renders a sphere with given parameters */
+void my_gluSphere(GLdouble radius, GLint slices, GLint stacks)
+{
+    int i, j;
+    
+    for(i = 0; i <= stacks; i++) {
+        double lat0 = M_PI * (-0.5 + (double)(i - 1) / stacks);
+        double z0 = sin(lat0);
+        double zr0 = cos(lat0);
+        
+        double lat1 = M_PI * (-0.5 + (double)i / stacks);
+        double z1 = sin(lat1);
+        double zr1 = cos(lat1);
+        
+        glBegin(GL_QUAD_STRIP);
+        for(j = 0; j <= slices; j++) {
+            double lng = 2 * M_PI * (double)(j - 1) / slices;
+            double x = cos(lng);
+            double y = sin(lng);
+            
+            glNormal3d(x * zr0, y * zr0, z0);
+            glVertex3d(radius * x * zr0, radius * y * zr0, radius * z0);
+            glNormal3d(x * zr1, y * zr1, z1);
+            glVertex3d(radius * x * zr1, radius * y * zr1, radius * z1);
+        }
+        glEnd();
+    }
+}
+
 
 #ifdef __APPLE__
 	#define glActiveTexture glActiveTextureARB
@@ -2118,10 +2146,9 @@ int create_table( int reflect_bind, BordersType *borders, int carambol ) {
   // for debugging only
   /* for(i=0;i<borders->holenr;i++){
        GLUquadric * qd;
-       qd=gluNewQuadric();
        glPushMatrix();
        glTranslatef( borders->hole[i].pos.x, borders->hole[i].pos.y, borders->hole[i].pos.z );
-       gluSphere( qd, borders->hole[i].r, 8, 8 );
+       my_gluSphere( borders->hole[i].r, 8, 8 );
        glPopMatrix();
    } */
    glEndList();

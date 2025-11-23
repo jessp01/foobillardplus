@@ -31,11 +31,9 @@
 #include <stdlib.h>
 #ifdef __APPLE__
  #include <OpenGL/gl.h>
- #include <OpenGL/glu.h>
  typedef GLvoid (*_GLUfuncptr)(GLvoid);
 #else
  #include <GL/gl.h>
- #include <GL/glu.h>
 #endif
 #include <regex.h>
 
@@ -102,6 +100,7 @@ static GLsizei VertexCounter;     // how much vertices to draw
 static GLuint  VertexIndex;       // Index to next value of VertexData
 static GLenum  glType;            // hold the type of vertices
 
+#ifdef WITH_TESS 
 struct TessDataVec{
     OGL_ES_DOUBLE d[3];
     int is_start;
@@ -147,7 +146,7 @@ void free_tessdata(struct TessData * tessdata)
 }
 
 /***********************************************************************/
-
+#endif
 /*
   Count the "real" chars in an utf8string
 */
@@ -381,6 +380,7 @@ void getStringPixmapFT(char *str, char *fontname, int font_height, char ** data,
  *           Write one vertex to the float vertex-array                *
  ***********************************************************************/
 
+#ifdef WITH_TESS 
 #ifdef USE_WIN	//RB
   void APIENTRY my_Vertex_cb(void * data)
 #else
@@ -398,7 +398,6 @@ void getStringPixmapFT(char *str, char *fontname, int font_height, char ** data,
     VertexData[VertexIndex++] = d[2];
     VertexCounter++;
 }
-
 /***********************************************************************
  *   Error function for the glu tessalation functions (only fprintf)   *
  ***********************************************************************/
@@ -525,6 +524,7 @@ int cb_tess_line_to( FT_Vector * to, void * user )
 }
 
 /***********************************************************************/
+#endif
 
 VMvect conic_spline_point( VMvect vi, VMvect vf, VMvect vc, VMfloat t )
 {
@@ -551,6 +551,7 @@ VMvect cubic_spline_point( VMvect vi, VMvect vc1, VMvect vc2, VMfloat t )
 
 /***********************************************************************/
 
+#ifdef WITH_TESS
 int cb_tess_conic_to( FT_Vector * ctrl, FT_Vector * to, void * user )
 {
     VMvect vi,vf,vc, v;
@@ -692,76 +693,17 @@ void makeGLGeometryFT(FT_GlyphSlot glyph, VMfloat depth)
 }
 
 /***********************************************************************/
+#endif
 
-GLuint getStringGLListFT (char *str, char *fontname, VMfloat font_height, float depth, VMfloat * width, VMfloat * height)
-/* data containes the pixmap */
+GLuint getStringGLListFT(char *str, char *fontname, VMfloat font_height, float depth, VMfloat * width, VMfloat * height)
 {
-    GLuint rval;
-    FT_Face face;      /* handle to face object */
-    int error;
-    FT_ULong n,realindex,newindex;
-    FT_UInt glyph_index;
-
-    //.. initialise library ..
-    if(init_me){
-        error = FT_Init_FreeType( &library );
-        if ( error ) {
-            error_print("FT_Init_FreeType error",NULL);
-            sys_exit(1);
-        }
-        init_me=0;
+    static int warned = 0;
+    if (!warned) {
+        fprintf(stderr, "Info: 3D text rendering disabled (using 2D fallback)\n");
+        warned = 1;
     }
-    error = FT_New_Face( library, fontname, 0, &face );
-
-    if ( error == FT_Err_Unknown_File_Format ){
-        error_print("The font file could be opened and read, but it appears that its font format is unsupported",NULL);
-        sys_exit(1);
-    } else if ( error ) {
-        error_print("Another error code means that the font file could not be opened or read, or simply that it is broken",NULL);
-        sys_exit(1);
-    }
-    //.. set character size ..
-    error = FT_Set_Char_Size(
-                             face,    /* handle to face object           */
-                             0,       /* char_width in 1/64th of points  */
-                             font_height*divisor,   /* char_height in 1/64th of points */
-                             72*72/64,      /* horizontal device resolution    */
-                             72*72/64 );    /* vertical device resolution      */
-    rval = glGenLists( 1 );
-
-    glNewList( rval,  GL_COMPILE );
-    glPushMatrix();
-
-    if (width!=NULL)  *width=0;
-    if (height!=NULL) *height=font_height;
-
-    for ( n = 0; str[n]!=0; n++ ){
-        if(!(realindex = decode((uint8_t *)&str[n],&newindex))) {
-           realindex = str[n]; //ugly, but in function
-           }
-        n += newindex;
-
-        // retrieve glyph index from character code
-        glyph_index = FT_Get_Char_Index( face, realindex );
-
-        // load glyph image into the slot (erase previous one)
-        error = FT_Load_Glyph( face, glyph_index, FT_LOAD_DEFAULT );
-        if (error) {
-            error_print("FT_Load_Glyph:error",NULL);
-            sys_exit(1);
-        }
-        makeGLGeometryFT(face->glyph, depth);
-        if (width!=NULL) (*width) += (VMfloat)(face->glyph->advance.x)/divisor;
-    }
-
-    error = FT_Done_Face(face);
-    if ( error ) {
-        error_print("FT_Done_Face error",NULL);
-        sys_exit(1);
-    }
-    //fprintf(stderr,"FT_Done_FreeType ready\n");
-    glPopMatrix();
-    glEndList();
-
-    return rval;
+    
+    if (width) *width = 0;
+    if (height) *height = font_height;
+    return 0;  // Invalid display list - will be handled by textobj.c fallback
 }

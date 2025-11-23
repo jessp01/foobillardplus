@@ -25,11 +25,9 @@
 
 #ifdef __APPLE__
  #include <OpenGL/gl.h>
- #include <OpenGL/glu.h>
  #include <OpenGL/glext.h>
 #else
  #include <GL/gl.h>
- #include <GL/glu.h>
  #include <GL/glext.h>
 #endif
 #include <string.h>
@@ -278,7 +276,8 @@ int bumpref_create_bumpmap( char * map_name, VMfloat strength)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, options_tex_mag_filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB8, w, h, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
     glDisable(GL_TEXTURE_2D);
     return(texbind);
 #else

@@ -27,17 +27,16 @@
 #include <stdio.h>
 #ifdef __APPLE__
  #include <OpenGL/gl.h>
- #include <OpenGL/glu.h>
  #include <OpenGL/glext.h>
 #else
  #include <GL/gl.h>
- #include <GL/glu.h>
  #include <GL/glext.h>
 #endif
 #include "billard.h"
 #include "queue.h"
 #include "png_loader.h"
 #include "options.h"
+#include "sys_stuff.h"
 
 /***********************************************************************/
 
@@ -181,8 +180,8 @@ void create_queue_texbind( void )
     glGenTextures(1,&queuetexbind);
     load_png("queue.png",&queuetexw,&queuetexh,&depth,&queuetexdata);
     glBindTexture(GL_TEXTURE_2D,queuetexbind);
-    gluBuild2DMipmaps(GL_TEXTURE_2D, 3, queuetexw, queuetexh, GL_RGB,
-                      GL_UNSIGNED_BYTE, queuetexdata);
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, queuetexw, queuetexh, 0, GL_RGB, GL_UNSIGNED_BYTE, queuetexdata);
+    glGenerateMipmap(GL_TEXTURE_2D);
     if(options_anisotrop && options_value_anisotrop > 0.0) {
       glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, options_value_anisotrop);
     }
@@ -225,7 +224,8 @@ void draw_queue( VMvect pos0, GLfloat Xrot, GLfloat Zrot, GLfloat zoffs,
         glGenTextures(1,&queueshadowbind);
         load_png("queue_shadow.png",&queuetexw,&queuetexh,&depth,&queuetexdata);
         glBindTexture(GL_TEXTURE_2D,queueshadowbind);
-        gluBuild2DMipmaps(GL_TEXTURE_2D, 1, queuetexw, queuetexh, GL_LUMINANCE, GL_UNSIGNED_BYTE, queuetexdata);
+	glTexImage2D(GL_TEXTURE_2D, 0, 1, queuetexw, queuetexh, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, queuetexdata);
+	glGenerateMipmap(GL_TEXTURE_2D);
         free(queuetexdata);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, options_tex_min_filter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, options_tex_mag_filter);

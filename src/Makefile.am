@@ -226,7 +226,7 @@ USEWIN_CFLAGS = -DUSE_WIN -static-libgcc -lsupc++ -Wl,-nostdlib -Wl,-s
 LDADD_FLAGS = -lpng -lz -lfreetype -lglu32 -lopengl32 ${SOUND_MIXER}
 else
 USEWIN_CFLAGS =
-LDADD_FLAGS = -lGL -lGLU -lpng -lfreetype ${NET_LIB} ${SOUND_MIXER}
+LDADD_FLAGS = -lGL -lpng -lfreetype ${NET_LIB} ${SOUND_MIXER}
 endif
 
 AM_CFLAGS = -Wall ${FREETYPE_CFLAGS} ${SDL_CFLAGS} ${NVIDIA_CFLAGS} ${SOUND_CFLAGS} ${DEBUG_CFLAGS} ${WETAB_CFLAGS} ${TOUCH_CFLAGS} ${NET_CFLAGS} ${MATH_CFLAGS} \

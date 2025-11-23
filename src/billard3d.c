@@ -85,6 +85,47 @@
 #include "chess.h"
 #include "getopt_long.h"
 
+/* Replacement for gluProject - converts 3D coords to 2D screen coords */
+int my_gluProject(GLdouble objX, GLdouble objY, GLdouble objZ,
+                  const GLdouble *model, const GLdouble *proj, const GLint *view,
+                  GLdouble *winX, GLdouble *winY, GLdouble *winZ)
+{
+    GLdouble in[4], out[4];
+
+    /* Transform object coordinates to eye coordinates */
+    in[0] = objX;
+    in[1] = objY;
+    in[2] = objZ;
+    in[3] = 1.0;
+
+    /* Multiply by modelview matrix */
+    out[0] = model[0] * in[0] + model[4] * in[1] + model[8]  * in[2] + model[12] * in[3];
+    out[1] = model[1] * in[0] + model[5] * in[1] + model[9]  * in[2] + model[13] * in[3];
+    out[2] = model[2] * in[0] + model[6] * in[1] + model[10] * in[2] + model[14] * in[3];
+    out[3] = model[3] * in[0] + model[7] * in[1] + model[11] * in[2] + model[15] * in[3];
+
+    /* Multiply by projection matrix */
+    in[0] = proj[0] * out[0] + proj[4] * out[1] + proj[8]  * out[2] + proj[12] * out[3];
+    in[1] = proj[1] * out[0] + proj[5] * out[1] + proj[9]  * out[2] + proj[13] * out[3];
+    in[2] = proj[2] * out[0] + proj[6] * out[1] + proj[10] * out[2] + proj[14] * out[3];
+    in[3] = proj[3] * out[0] + proj[7] * out[1] + proj[11] * out[2] + proj[15] * out[3];
+
+    if (in[3] == 0.0) return GL_FALSE;
+
+    /* Perspective division */
+    in[0] /= in[3];
+    in[1] /= in[3];
+    in[2] /= in[3];
+
+    /* Map to viewport */
+    *winX = view[0] + (view[2] * (in[0] + 1.0)) / 2.0;
+    *winY = view[1] + (view[3] * (in[1] + 1.0)) / 2.0;
+    *winZ = (in[2] + 1.0) / 2.0;
+
+    return GL_TRUE;
+}
+
+
 static struct PlayerRoster human_player_roster;
 static struct TournamentState_ tournament_state;
 
@@ -5385,7 +5426,7 @@ void DisplayFunc( void )
            glGetDoublev(GL_MODELVIEW_MATRIX,b_modelview); //get the whole world OpenGL offset of the strength bar begin
            glGetDoublev(GL_PROJECTION_MATRIX,b_projection);
            glGetIntegerv(GL_VIEWPORT,b_viewport);
-           gluProject(-0.5,-0.755,0.0,b_modelview,b_projection,b_viewport,&x_strengthbar,&y_strengthbar,&z_dummy);
+           my_gluProject(-0.5,-0.755,0.0,b_modelview,b_projection,b_viewport,&x_strengthbar,&y_strengthbar,&z_dummy);
            glPopMatrix();
            glPushMatrix();
            glTranslatef(0.5,-0.675, 0.0);
@@ -5393,7 +5434,7 @@ void DisplayFunc( void )
            glGetDoublev(GL_MODELVIEW_MATRIX,b_modelview); //get the whole world OpenGL offset of the strength bar end
            glGetDoublev(GL_PROJECTION_MATRIX,b_projection);
            glGetIntegerv(GL_VIEWPORT,b_viewport);
-           gluProject(0.5,-0.675,0.0,b_modelview,b_projection,b_viewport,&x_strengthbar_end,&y_strengthbar_end,&z_dummy);
+           my_gluProject(0.5,-0.675,0.0,b_modelview,b_projection,b_viewport,&x_strengthbar_end,&y_strengthbar_end,&z_dummy);
            glPopMatrix();
            //percent on the strength bar
            sprintf(stbar_text,"%u%%",(unsigned int)(queue_strength*100));
@@ -5414,7 +5455,7 @@ void DisplayFunc( void )
              glGetDoublev(GL_MODELVIEW_MATRIX,b_modelview); //get the whole world OpenGL offset of the buttons
              glGetDoublev(GL_PROJECTION_MATRIX,b_projection);
              glGetIntegerv(GL_VIEWPORT,b_viewport);
-             gluProject(-0.72,-0.72,0.0,b_modelview,b_projection,b_viewport,&x_upbutton,&y_upbutton,&z_dummy);
+             my_gluProject(-0.72,-0.72,0.0,b_modelview,b_projection,b_viewport,&x_upbutton,&y_upbutton,&z_dummy);
              //fprintf(stderr,"up button x %f y %f\n",x_upbutton,y_upbutton);
              glBindTexture(GL_TEXTURE_2D,utexbind); //Up button - zoom+
              myRect2D_texture();
@@ -5423,7 +5464,7 @@ void DisplayFunc( void )
              glGetDoublev(GL_MODELVIEW_MATRIX,b_modelview); //get the whole world OpenGL offset of the buttons
              glGetDoublev(GL_PROJECTION_MATRIX,b_projection);
              glGetIntegerv(GL_VIEWPORT,b_viewport);
-             gluProject(-0.72,-0.82,0.0,b_modelview,b_projection,b_viewport,&x_downbutton,&y_downbutton,&z_dummy);
+             my_gluProject(-0.72,-0.82,0.0,b_modelview,b_projection,b_viewport,&x_downbutton,&y_downbutton,&z_dummy);
              glBindTexture(GL_TEXTURE_2D,dtexbind); //Down button - zoom-
              myRect2D_texture();
 
@@ -5431,7 +5472,7 @@ void DisplayFunc( void )
              glGetDoublev(GL_MODELVIEW_MATRIX,b_modelview); //get the whole world OpenGL offset of the buttons
              glGetDoublev(GL_PROJECTION_MATRIX,b_projection);
              glGetIntegerv(GL_VIEWPORT,b_viewport);
-             gluProject(-0.62,-0.77,0.0,b_modelview,b_projection,b_viewport,&x_backbutton,&y_backbutton,&z_dummy);
+             my_gluProject(-0.62,-0.77,0.0,b_modelview,b_projection,b_viewport,&x_backbutton,&y_backbutton,&z_dummy);
              glBindTexture(GL_TEXTURE_2D,btexbind); //Back button
              myRect2D_texture();
 
@@ -5442,7 +5483,7 @@ void DisplayFunc( void )
              glGetDoublev(GL_MODELVIEW_MATRIX,b_modelview); //get the whole world OpenGL offset of the buttons
              glGetDoublev(GL_PROJECTION_MATRIX,b_projection);
              glGetIntegerv(GL_VIEWPORT,b_viewport);
-             gluProject(0.515,-0.77,0.0,b_modelview,b_projection,b_viewport,&x_nextbutton,&y_nextbutton,&z_dummy);
+             my_gluProject(0.515,-0.77,0.0,b_modelview,b_projection,b_viewport,&x_nextbutton,&y_nextbutton,&z_dummy);
              glBindTexture(GL_TEXTURE_2D,ntexbind);  //Next Button
              myRect2D_texture();
 
@@ -5450,7 +5491,7 @@ void DisplayFunc( void )
              glGetDoublev(GL_MODELVIEW_MATRIX,b_modelview); //get the whole world OpenGL offset of the buttons
              glGetDoublev(GL_PROJECTION_MATRIX,b_projection);
              glGetIntegerv(GL_VIEWPORT,b_viewport);
-             gluProject(0.643,-0.77,0.0,b_modelview,b_projection,b_viewport,&x_shootbutton,&y_shootbutton,&z_dummy);
+             my_gluProject(0.643,-0.77,0.0,b_modelview,b_projection,b_viewport,&x_shootbutton,&y_shootbutton,&z_dummy);
              glBindTexture(GL_TEXTURE_2D,stexbind);  //Shoot Button
              myRect2D_texture();
              glPopMatrix();

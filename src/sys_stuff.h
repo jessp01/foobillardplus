@@ -27,6 +27,9 @@
 
 #include "vmath.h"
 
+typedef void (*PFNGLGENERATEMIPMAPPROC)(GLenum target);
+extern PFNGLGENERATEMIPMAPPROC glGenerateMipmap;
+
 typedef enum 
 {
   MOUSE_LEFT_BUTTON=1,

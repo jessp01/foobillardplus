@@ -25,16 +25,15 @@
 #include <stdlib.h>
 #ifdef __APPLE__
  #include <OpenGL/gl.h>
- #include <OpenGL/glu.h>
 #else
  #include <GL/gl.h>
- #include <GL/glu.h>
 #endif
 #include <stdio.h>
 #include <string.h>
 #include "options.h"
 #include "font.h"
 #include "textobj.h"
+#include "sys_stuff.h"
 
 /***********************************************************************/
 
@@ -51,8 +50,8 @@ int create_string_quad( char * str, char * fontname, int h, int * quad_id, int *
     getStringPixmapFT( str, fontname, h, &texdata, &texw, &texh, &width, &height );
     glGenTextures(1,&texbind);
     glBindTexture(GL_TEXTURE_2D,texbind);
-    gluBuild2DMipmaps(GL_TEXTURE_2D, 1, texw, texh, GL_LUMINANCE,
-                      GL_UNSIGNED_BYTE, texdata);
+    glTexImage2D(GL_TEXTURE_2D, 0, 1, texw, texh, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, texdata);
+    glGenerateMipmap(GL_TEXTURE_2D);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, options_tex_min_filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, options_tex_mag_filter);
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);

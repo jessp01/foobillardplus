@@ -36,10 +36,8 @@
 #include <stdio.h>
 #ifdef __APPLE__
  #include <OpenGL/gl.h>
- #include <OpenGL/glu.h>
 #else
  #include <GL/gl.h>
- #include <GL/glu.h>
 #endif
 #ifdef USE_WIN //HS
 	#include <GL/glext.h>
@@ -300,7 +298,8 @@ void create_png_texbind(char *file_name, GLuint *texbind, GLuint component, GLui
  glGenTextures(1,texbind);
  load_png(file_name,&spheretexw,&spheretexh,&depth,&spheretexdata);
  glBindTexture(GL_TEXTURE_2D,*texbind);
- gluBuild2DMipmaps(GL_TEXTURE_2D, component, spheretexw, spheretexh, format, GL_UNSIGNED_BYTE, spheretexdata);
+ glTexImage2D(GL_TEXTURE_2D, 0, component, spheretexw, spheretexh, 0, format, GL_UNSIGNED_BYTE, spheretexdata);
+ glGenerateMipmap(GL_TEXTURE_2D);
  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, options_tex_min_filter);
  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, options_tex_mag_filter);
  if(options_anisotrop && options_value_anisotrop > 0.0) {
